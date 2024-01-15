@@ -109,7 +109,7 @@ def register():
                     (NULL, '{username}', '{password}', '{email}', '{address}', '{district}', '{city}', '{country}');"
             )
             connector.commit()
-            msg = "Successfully registered !"
+            msg = "You have successfully registered the account!!!"
         connector.close()
     elif request.method == "POST":
         msg = "Please fill out the form !"
@@ -138,6 +138,60 @@ def logout():
     session.pop('id', None)
     session.pop('username', None)
     return redirect(url_for("login"))
+
+
+@app.route("/update", methods = ['GET', 'POST'])
+def update():
+    msg = ""
+    if 'loggedin' in session:
+        if request.method == "POST" and \
+            "username" in request.form and \
+            "password" in request.form and \
+            "email" in request.form and \
+            "address" in request.form and \
+            "city" in request.form and \
+            "district" in request.form and \
+            "country" in request.form:
+            username = request.form["username"]
+            password = request.form["password"]
+            email = request.form["email"]
+            address = request.form["address"]
+            city = request.form["city"]
+            district = request.form["district"]
+            country = request.form["country"]
+            
+            connector = mysql_server.connect()
+            cursor = connector.cursor()
+
+            cursor.execute(
+                f"SELECT * FROM accounts WHERE username = '{username}';"
+            )
+            account = cursor.fetchone()
+
+            print("1")
+            if not re.match(r"^[a-z0-9A-Z._@+-]+@[a-zA-Z0-9]+\.[a-zA-Z]+$", string=email):
+                msg = "Invalid email address !"
+            elif not re.match(r"^[a-zA-Z0-9]+$", username):
+                msg = "Username only contains characters and numbers !"
+            elif not account:
+                print("2")
+                msg = "Invalid account! Please choose an existing account"
+            else:
+                print("3")
+                cursor.execute(
+                    f"UPDATE accounts SET \
+                        username='{username}', password='{password}',email='{email}', \
+                        address='{address}', district='{district}',city='{city}', \
+                        country='{country}' WHERE id='{session['id']}';"
+                )
+                connector.commit()
+                msg = "You have successfully updated the account!!!"
+            connector.close()
+        elif request.method == "POST":
+            msg = "Please fill out the form !"
+        return render_template("update.html", msg=msg)
+    return redirect(url_for("login"))
+
 
 if __name__ == "__main__":
     app.run(host="localhost", port=7000)
