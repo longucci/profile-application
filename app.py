@@ -131,5 +131,13 @@ def display():
     return redirect(url_for("login"))
 
 
+@app.route("/logout")
+def logout():
+    # To logout from the application, slightly remove id and username from the session
+    session.pop('loggedin', None)
+    session.pop('id', None)
+    session.pop('username', None)
+    return redirect(url_for("login"))
+
 if __name__ == "__main__":
     app.run(host="localhost", port=7000)
