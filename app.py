@@ -104,7 +104,6 @@ def register():
         elif not re.match(r"^[a-zA-Z0-9]+$", username):
             msg = "Username only contains characters and numbers !"
         else:
-            print("Done here")
             cursor.execute(
                 f"INSERT INTO accounts VALUES \
                     (NULL, '{username}', '{password}', '{email}', '{address}', '{district}', '{city}', '{country}');"
@@ -115,6 +114,21 @@ def register():
     elif request.method == "POST":
         msg = "Please fill out the form !"
     return render_template("register.html", msg=msg)
+
+
+@app.route("/display", methods = ["GET"])
+def display():
+    # While logging in the application, the user profile will be displayed in the display tab
+    if "loggedin" in session:
+        connector = mysql_server.connect()
+        cursor = connector.cursor()
+        print(session['id'])
+        cursor.execute(
+            f"SELECT * FROM accounts WHERE id = '{session['id']}';"
+        )
+        account = cursor.fetchone()
+        return render_template("display.html", account=account)
+    return redirect(url_for("login"))
 
 
 if __name__ == "__main__":
